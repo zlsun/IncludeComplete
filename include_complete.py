@@ -46,7 +46,6 @@ def get_headers(paths, folder):
         for i in listdir(root):
             if i.startswith('.'):
                 continue
-            # print(splitext(i))
             if isdir(join(root, i)):
                 headers.append(("%s/\tfolder" % i, "%s/" % i))
             elif splitext(i)[1] in ["", ".h", ".hpp"]:
@@ -91,12 +90,12 @@ class IncludeCompleteListenner(sublime_plugin.EventListener):
 
     def should_trigger(self, scope):
         selector = "meta.preprocessor.c.include"
-        # log(scope, sublime.score_selector(scope, selector))
+        log(scope, sublime.score_selector(scope, selector))
         return sublime.score_selector(scope, selector)
 
     def is_in_cxx(self, scope):
         selector = "source.c++"
-        # log(scope, sublime.score_selector(scope, selector))
+        log(scope, sublime.score_selector(scope, selector))
         return sublime.score_selector(scope, selector)
 
     def on_query_completions(self, view, prefix, locations):
@@ -106,10 +105,11 @@ class IncludeCompleteListenner(sublime_plugin.EventListener):
 
         region = view.line(locations[0])
         line = view.substr(region)
-        # log(prefix, line)
 
         match = INC_RE.match(line)
-        assert match is not None
+        if match is None:
+            return
+
         surround = match.group(1)
         folder = match.group(2)
         prefix = match.group(3)
@@ -131,13 +131,12 @@ def get_environ_paths(key):
 
 
 def plugin_loaded():
-    for paths in map(get_environ_paths, ["INCLUDE"]):
+    for paths in get_environ_paths("INCLUDE"):
         c_include_paths.update(paths)
         cxx_include_paths.update(paths)
-    for paths in map(get_environ_paths, ["C_INCLUDE_PATH"]):
+    for paths in get_environ_paths("C_INCLUDE_PATH"):
         c_include_paths.update(paths)
-    for paths in map(get_environ_paths, ["CPLUS_INCLUDE_PATH"]):
+    for paths in get_environ_paths("CPLUS_INCLUDE_PATH"):
         cxx_include_paths.update(paths)
     log(c_include_paths)
     log(cxx_include_paths)
-
