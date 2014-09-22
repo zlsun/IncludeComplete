@@ -131,12 +131,12 @@ def get_environ_paths(key):
 
 
 def plugin_loaded():
-    for paths in get_environ_paths("INCLUDE"):
+    for paths in map(get_environ_paths, ["INCLUDE"]):
         c_include_paths.update(paths)
         cxx_include_paths.update(paths)
-    for paths in get_environ_paths("C_INCLUDE_PATH"):
+    for paths in map(get_environ_paths, ["C_INCLUDE_PATH"]):
         c_include_paths.update(paths)
-    for paths in get_environ_paths("CPLUS_INCLUDE_PATH"):
+    for paths in map(get_environ_paths, ["CPLUS_INCLUDE_PATH"]):
         cxx_include_paths.update(paths)
     log(c_include_paths)
     log(cxx_include_paths)
