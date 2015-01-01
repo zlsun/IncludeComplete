@@ -68,7 +68,7 @@ def get_common_cxx_headers(folder):
 
 def contain_header(path):
     for f in listdir(path):
-        if splitext(i)[1] in [".h", ".hpp"]:
+        if splitext(f)[1] in [".h", ".hpp"]:
             return True
     return False
 
