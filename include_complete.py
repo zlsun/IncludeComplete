@@ -5,7 +5,7 @@ import re
 import sys
 from glob import glob
 from os import listdir
-from os.path import isdir
+from os.path import *
 
 DEBUG = False
 
