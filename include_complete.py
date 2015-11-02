@@ -4,10 +4,10 @@ import sublime_plugin
 import re
 import sys
 from glob import glob
-from os import *
-from os.path import *
+from os import listdir
+from os.path import isdir
 
-DEBUG = True
+DEBUG = False
 
 INC_RE = re.compile(
     r"\s*#include\s*([\<\"])((([^/<>\"]*)/)*)([^/<>\"]*)([\>\"])")
@@ -127,7 +127,9 @@ class IncludeCompleteListenner(sublime_plugin.EventListener):
 
 
 def plugin_loaded():
-    for settings_name in ["IncludeComplete.sublime-settings", "IncludeComplete ({}).sublime-settings".format(sublime.platform().capitalize())]:
+    for settings_name in ["IncludeComplete.sublime-settings",
+                          "IncludeComplete ({}).sublime-settings".format(
+                              sublime.platform().capitalize())]:
         settings = sublime.load_settings(settings_name)
         get_setting = lambda key: settings.get(key, [])
         for paths in map(get_setting, ["include"]):
