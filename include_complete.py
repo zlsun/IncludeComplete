@@ -7,13 +7,13 @@ from glob import glob
 from os import *
 from os.path import *
 
+DEBUG = True
 
 INC_RE = re.compile(
     r"\s*#include\s*([\<\"])((([^/<>\"]*)/)*)([^/<>\"]*)([\>\"])")
-c_include_paths = set()
-cxx_include_paths = set()
 
-DEBUG = False
+c_include_path = set()
+cplus_include_path = set()
 
 
 def log(*args, **kwds):
@@ -55,15 +55,15 @@ def get_headers(paths, folder):
 
 
 @cache
-def get_common_c_headers(folder):
-    log("get_common_c_headers", folder)
-    return get_headers(c_include_paths, folder)
+def get_system_c_headers(folder):
+    log("get_system_c_headers", folder)
+    return get_headers(c_include_path, folder)
 
 
 @cache
-def get_common_cxx_headers(folder):
-    log("get_common_cxx_headers", folder)
-    return get_headers(cxx_include_paths, folder)
+def get_system_cxx_headers(folder):
+    log("get_system_cxx_headers", folder)
+    return get_headers(cplus_include_path, folder)
 
 
 def contain_header(path):
@@ -73,8 +73,8 @@ def contain_header(path):
     return False
 
 
-def get_user_headers(folder):
-    log("get_user_headers", folder)
+def get_project_headers(folder):
+    log("get_project_headers", folder)
     paths = []
     for f in sublime.active_window().folders():
         paths.append(f)
@@ -117,26 +117,25 @@ class IncludeCompleteListenner(sublime_plugin.EventListener):
 
         headers = []
         if surround == '\"':
-            headers.extend(get_user_headers(folder))
+            headers.extend(get_project_headers(folder))
         if self.is_in_cxx(scope):
-            headers.extend(get_common_cxx_headers(folder))
+            headers.extend(get_system_cxx_headers(folder))
         else:
-            headers.extend(get_common_c_headers(folder))
+            headers.extend(get_system_c_headers(folder))
         log(headers[:10])
         return headers
 
 
-def get_environ_paths(key):
-    return [join(p, '') for p in environ[key].split(';')]
-
-
 def plugin_loaded():
-    for paths in map(get_environ_paths, ["INCLUDE"]):
-        c_include_paths.update(paths)
-        cxx_include_paths.update(paths)
-    for paths in map(get_environ_paths, ["C_INCLUDE_PATH"]):
-        c_include_paths.update(paths)
-    for paths in map(get_environ_paths, ["CPLUS_INCLUDE_PATH"]):
-        cxx_include_paths.update(paths)
-    log(c_include_paths)
-    log(cxx_include_paths)
+    for settings_name in ["IncludeComplete.sublime-settings", "IncludeComplete ({}).sublime-settings".format(sublime.platform().capitalize())]:
+        settings = sublime.load_settings(settings_name)
+        get_setting = lambda key: settings.get(key, [])
+        for paths in map(get_setting, ["include"]):
+            c_include_path.update(paths)
+            cplus_include_path.update(paths)
+        for paths in map(get_setting, ["c_include_path"]):
+            c_include_path.update(paths)
+        for paths in map(get_setting, ["cplus_include_path"]):
+            cplus_include_path.update(paths)
+    log(c_include_path)
+    log(cplus_include_path)
